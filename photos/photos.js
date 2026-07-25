@@ -2,6 +2,8 @@
    You CAN safely edit the caption text below; it is preserved on re-import.
    Photos appear on the page in the order listed here. */
 window.GALLERY_PHOTOS = [
+  { src: "photos/10c69e11-84a5-45ff-936b-188f5c30ec56.jpg", caption: "" },
+  { src: "photos/1c016f18-7dce-4f24-8658-d0874659a504.jpg", caption: "" },
   { src: "photos/1ce95998-a775-4d6c-b9c3-df6a2f946bf1.jpg", caption: "" },
   { src: "photos/2f065842-fae6-4641-84ee-bad0be37392a.jpg", caption: "" },
   { src: "photos/60e2cfb5-3836-473a-a371-1921a4be01b3.jpg", caption: "" },
