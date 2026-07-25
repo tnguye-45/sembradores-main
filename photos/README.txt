@@ -10,5 +10,8 @@ To add photos to the gallery:
 The script converts HEIC to JPEG, fixes sideways photos, shrinks them for the
 web, and rewrites photos.js -- the list the gallery page reads.
 
+Deleting works the same way: remove a photo from the Drive folder, re-run the
+script, and it disappears from the site too. This folder always mirrors Drive.
+
 To caption a photo, type it between the quotes in photos.js. Captions survive
 future imports.
