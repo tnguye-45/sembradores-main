@@ -7,7 +7,12 @@ window.GALLERY_PHOTOS = [
   { src: "photos/60e2cfb5-3836-473a-a371-1921a4be01b3.jpg", caption: "" },
   { src: "photos/a5730e71-19c4-4397-b311-2c8d32f81608.jpg", caption: "" },
   { src: "photos/dfb8824c-6716-4d78-a833-c15bd3ab2345.jpg", caption: "" },
+  { src: "photos/f4b003a0-9431-4451-adef-d76dcd83e266.jpg", caption: "" },
+  { src: "photos/f5899914-80b6-44c1-acbe-8898246e4d6c.jpg", caption: "" },
+  { src: "photos/img-5487.jpg", caption: "" },
   { src: "photos/img-5662.jpg", caption: "" },
+  { src: "photos/img-5694.jpg", caption: "" },
   { src: "photos/img-5948.jpg", caption: "" },
   { src: "photos/img-6025.jpg", caption: "" },
+  { src: "photos/img-6050.jpg", caption: "" },
 ];
