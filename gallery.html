@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="./sprout.png" />
+    <link rel="apple-touch-icon" href="./sprout.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Photos from Sembradores de Semillas mission trips to Sabandía-Arequipa, Peru." />
+    <meta name="theme-color" content="#15273A" />
+    <meta property="og:title" content="Gallery — Sembradores de Semillas" />
+    <meta property="og:description" content="Photos from our missions to Sabandía-Arequipa, Peru." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://tnguye-45.github.io/sembradores-draft/og-image.jpeg" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>Gallery — Sembradores de Semillas</title>
+    <style>
+      :root {
+        --sky:#6FB7E9; --skySoft:#D9ECF7; --yellow:#F5C13D; --yellowSoft:#FBE9B0;
+        --red:#D94B3D; --redDeep:#A8362B; --ink:#15273A; --cream:#FAF6EE;
+        --paper:#FFFFFF; --muted:#6B7A8A; --line:#E8E0CF;
+        --serif:"Cormorant Garamond","Playfair Display",Georgia,serif;
+        --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body { margin:0; background:var(--cream); color:var(--ink); font-family:var(--sans); line-height:1.55; -webkit-font-smoothing:antialiased; }
+      a { color:var(--red); }
+
+      .wrap { max-width:1280px; margin:0 auto; padding:32px 20px 90px; }
+      .back { display:inline-block; margin:8px 0 24px; color:var(--ink); text-decoration:none; font-weight:600; font-size:14px; }
+      .back:hover { color:var(--red); }
+      .eyebrow { font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); font-weight:600; }
+      h1 { font-family:var(--serif); font-weight:500; font-size:clamp(34px,6vw,56px); letter-spacing:-1px; line-height:1.05; margin:8px 0 10px; }
+      .sub { color:var(--muted); font-size:17px; max-width:620px; margin:0 0 6px; }
+      .count { font-size:13px; color:var(--muted); margin:14px 0 0; }
+
+      /* ---- album filter chips (only shown if photos declare an album) ---- */
+      .filters { display:none; flex-wrap:wrap; gap:8px; margin:24px 0 0; }
+      .filters.on { display:flex; }
+      .chip {
+        font-family:var(--sans); font-size:13px; font-weight:600; letter-spacing:.3px;
+        background:var(--paper); color:var(--ink); border:1px solid var(--line);
+        border-radius:999px; padding:8px 16px; cursor:pointer; transition:all .15s ease;
+      }
+      .chip:hover { border-color:var(--sky); }
+      .chip[aria-pressed="true"] { background:var(--ink); border-color:var(--ink); color:var(--cream); }
+
+      /* ---- collage: CSS-column masonry, keeps every photo's natural shape ---- */
+      .collage { column-count:4; column-gap:14px; margin-top:28px; }
+      @media (max-width:1100px){ .collage { column-count:3; } }
+      @media (max-width:760px) { .collage { column-count:2; column-gap:10px; } }
+      @media (max-width:440px) { .collage { column-count:1; } }
+
+      .tile {
+        break-inside:avoid; -webkit-column-break-inside:avoid; page-break-inside:avoid;
+        margin:0 0 14px; padding:0; border:none; width:100%; display:block;
+        background:var(--paper); border-radius:6px; overflow:hidden; cursor:zoom-in;
+        box-shadow:0 1px 2px rgba(21,39,58,.07); position:relative; line-height:0;
+        transition:transform .18s ease, box-shadow .18s ease;
+      }
+      @media (max-width:760px){ .tile { margin-bottom:10px; } }
+      .tile:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(21,39,58,.16); }
+      .tile:focus-visible { outline:3px solid var(--sky); outline-offset:2px; }
+      .tile img { width:100%; height:auto; display:block; opacity:0; transition:opacity .35s ease; background:var(--skySoft); }
+      .tile img.loaded { opacity:1; }
+      .tile .cap {
+        position:absolute; left:0; right:0; bottom:0; padding:26px 12px 10px;
+        font-family:var(--sans); font-size:12.5px; line-height:1.4; color:#fff; text-align:left;
+        background:linear-gradient(to top, rgba(21,39,58,.82), rgba(21,39,58,0));
+        opacity:0; transition:opacity .18s ease;
+      }
+      .tile:hover .cap, .tile:focus-visible .cap { opacity:1; }
+      @media (hover:none){ .tile .cap { opacity:1; } }
+
+      .empty { background:var(--paper); border:1px dashed var(--line); border-radius:8px; padding:40px 26px; text-align:center; color:var(--muted); margin-top:28px; }
+      .empty code { background:var(--cream); padding:2px 6px; border-radius:4px; color:var(--ink); font-size:13px; }
+
+      /* ---- lightbox ---- */
+      .lb { position:fixed; inset:0; background:rgba(11,22,34,.94); z-index:100; display:none; align-items:center; justify-content:center; }
+      .lb.on { display:flex; }
+      .lb img { max-width:92vw; max-height:82vh; object-fit:contain; border-radius:4px; box-shadow:0 20px 60px rgba(0,0,0,.5); }
+      .lb .lbcap { position:absolute; left:0; right:0; bottom:22px; text-align:center; color:#EFE7D7; font-size:14px; padding:0 70px; }
+      .lb .lbnum { position:absolute; top:20px; left:24px; color:#9FB0C0; font-size:13px; letter-spacing:1px; }
+      .lbbtn {
+        position:absolute; background:rgba(250,246,238,.10); color:#FAF6EE; border:1px solid rgba(250,246,238,.22);
+        border-radius:999px; cursor:pointer; font-family:var(--sans); display:flex; align-items:center; justify-content:center;
+        width:46px; height:46px; font-size:22px; line-height:1; transition:background .15s ease;
+      }
+      .lbbtn:hover { background:rgba(250,246,238,.24); }
+      .lbclose { top:16px; right:20px; font-size:20px; }
+      .lbprev { left:18px; top:50%; transform:translateY(-50%); }
+      .lbnext { right:18px; top:50%; transform:translateY(-50%); }
+      @media (max-width:600px){
+        .lbprev { left:10px; } .lbnext { right:10px; }
+        .lb .lbcap { padding:0 16px; bottom:14px; font-size:13px; }
+      }
+
+      footer.foot { border-top:1px solid var(--line); margin-top:64px; padding-top:22px; color:var(--muted); font-size:14px; display:flex; gap:16px; flex-wrap:wrap; justify-content:space-between; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <a class="back" href="./index.html">← Back to the main page</a>
+      <span class="eyebrow">Gallery</span>
+      <h1>Faces &amp; Moments</h1>
+      <p class="sub">Photographs from our missions to Sabandía-Arequipa, Peru — the work, the people, and the friendships that outlast the flight home.</p>
+      <p class="count" id="count"></p>
+
+      <div class="filters" id="filters" role="group" aria-label="Filter photos by album"></div>
+
+      <div class="collage" id="collage"></div>
+      <div class="empty" id="empty" hidden>
+        No photos yet. Drop image files into the <code>photos/</code> folder, then add one line
+        per photo to the <code>PHOTOS</code> list near the top of <code>gallery.html</code>.
+      </div>
+
+      <footer class="foot">
+        <span>Sembradores de Semillas · Sabandía-Arequipa, Peru</span>
+        <span><a href="./apply.html">Join a mission →</a></span>
+      </footer>
+    </div>
+
+    <!-- lightbox -->
+    <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Photo viewer">
+      <span class="lbnum" id="lbnum"></span>
+      <button class="lbbtn lbclose" id="lbclose" aria-label="Close">✕</button>
+      <button class="lbbtn lbprev" id="lbprev" aria-label="Previous photo">‹</button>
+      <img id="lbimg" alt="" />
+      <button class="lbbtn lbnext" id="lbnext" aria-label="Next photo">›</button>
+      <p class="lbcap" id="lbcap"></p>
+    </div>
+
+    <!-- The photo list. Generated by _import-photos.ps1 from your Drive folder. -->
+    <script src="photos/photos.js"></script>
+
+    <script>
+      /* ==========================================================================
+         WHERE THE PHOTOS COME FROM
+         --------------------------------------------------------------------------
+         Normally you do not edit this file at all. Drop photos into your Google
+         Drive folder, then run this once from the project folder:
+
+             powershell -ExecutionPolicy Bypass -File .\_import-photos.ps1
+
+         That converts/resizes everything into  photos/  and rewrites
+         photos/photos.js, which the page reads. To write captions, edit the
+         caption text in photos/photos.js — re-importing keeps them.
+
+         The manual list below is only a fallback used when photos/photos.js
+         does not exist yet. You can also add one-off photos to it by hand:
+             { src: "photos/my-photo.jpg", caption: "Day one", album: "2025" }
+         ========================================================================== */
+      var FALLBACK_PHOTOS = [
+        { src: "assets/586295_38e088cf17d34d66b7178b52a9ef6c13_mv2-DU162B2v.jpg" },
+        { src: "assets/586295_a10d9e73bc754147b1ab952707911a3f_mv2-DP5Tvh3C.jpg" },
+        { src: "assets/02fb54_c837428ffc84494e997f9d68c46c0849_mv2-bAOEne0J.jpeg" },
+        { src: "assets/586295_db5b8ccd3e1f4c23a23a1e66a6a512b7_mv2-B43nLtWu.jpg" },
+        { src: "assets/586295_91497b99eeaf4839bfc7e22c27467247_mv2-iNEKt5ab.jpg" },
+        { src: "assets/586295_ddb9c6beaca94252a9a5409d78ef295a_mv2-NCGrwtMm.jpg" },
+        { src: "assets/586295_85a476d60022491f94cceffb5009ee2e_mv2-BpPJtr8-.png" },
+      ];
+
+      var PHOTOS = (window.GALLERY_PHOTOS && window.GALLERY_PHOTOS.length)
+        ? window.GALLERY_PHOTOS
+        : FALLBACK_PHOTOS;
+
+      (function () {
+        var collage = document.getElementById("collage");
+        var filters = document.getElementById("filters");
+        var countEl = document.getElementById("count");
+        var emptyEl = document.getElementById("empty");
+        var visible = [];           // photos currently rendered, in display order
+        var activeAlbum = "All";
+
+        function render() {
+          visible = PHOTOS.filter(function (p) {
+            return activeAlbum === "All" || p.album === activeAlbum;
+          });
+          collage.innerHTML = "";
+          emptyEl.hidden = visible.length > 0;
+
+          visible.forEach(function (p, i) {
+            var tile = document.createElement("button");
+            tile.type = "button";
+            tile.className = "tile";
+            tile.setAttribute("aria-label", "Open photo" + (p.caption ? ": " + p.caption : ""));
+
+            var img = document.createElement("img");
+            img.src = p.src;
+            img.alt = p.alt || p.caption || "";
+            img.loading = "lazy";
+            img.decoding = "async";
+            img.addEventListener("load", function () { img.classList.add("loaded"); });
+            // A missing file shouldn't leave a dead grey box in the collage.
+            img.addEventListener("error", function () { tile.remove(); });
+            tile.appendChild(img);
+
+            if (p.caption) {
+              var cap = document.createElement("span");
+              cap.className = "cap";
+              cap.textContent = p.caption;
+              tile.appendChild(cap);
+            }
+
+            tile.addEventListener("click", function () { open(i); });
+            collage.appendChild(tile);
+          });
+
+          countEl.textContent = visible.length
+            ? visible.length + (visible.length === 1 ? " photo" : " photos")
+            : "";
+        }
+
+        function buildFilters() {
+          var albums = [];
+          PHOTOS.forEach(function (p) {
+            if (p.album && albums.indexOf(p.album) === -1) albums.push(p.album);
+          });
+          if (!albums.length) return;                 // no albums declared → no chips
+
+          filters.classList.add("on");
+          ["All"].concat(albums).forEach(function (name) {
+            var b = document.createElement("button");
+            b.className = "chip";
+            b.type = "button";
+            b.textContent = name;
+            b.setAttribute("aria-pressed", String(name === activeAlbum));
+            b.addEventListener("click", function () {
+              activeAlbum = name;
+              filters.querySelectorAll(".chip").forEach(function (c) {
+                c.setAttribute("aria-pressed", String(c.textContent === name));
+              });
+              render();
+            });
+            filters.appendChild(b);
+          });
+        }
+
+        /* ---------------------------- lightbox ---------------------------- */
+        var lb = document.getElementById("lb");
+        var lbimg = document.getElementById("lbimg");
+        var lbcap = document.getElementById("lbcap");
+        var lbnum = document.getElementById("lbnum");
+        var idx = 0;
+
+        function show(i) {
+          idx = (i + visible.length) % visible.length;
+          var p = visible[idx];
+          lbimg.src = p.src;
+          lbimg.alt = p.alt || p.caption || "";
+          lbcap.textContent = p.caption || "";
+          lbnum.textContent = (idx + 1) + " / " + visible.length;
+        }
+        function open(i) {
+          if (!visible.length) return;
+          show(i);
+          lb.classList.add("on");
+          document.body.style.overflow = "hidden";
+          document.getElementById("lbclose").focus();
+        }
+        function close() {
+          lb.classList.remove("on");
+          lbimg.removeAttribute("src");
+          document.body.style.overflow = "";
+        }
+
+        document.getElementById("lbclose").addEventListener("click", close);
+        document.getElementById("lbprev").addEventListener("click", function () { show(idx - 1); });
+        document.getElementById("lbnext").addEventListener("click", function () { show(idx + 1); });
+        lb.addEventListener("click", function (e) { if (e.target === lb) close(); });
+
+        document.addEventListener("keydown", function (e) {
+          if (!lb.classList.contains("on")) return;
+          if (e.key === "Escape") close();
+          else if (e.key === "ArrowRight") show(idx + 1);
+          else if (e.key === "ArrowLeft") show(idx - 1);
+        });
+
+        // swipe on touch devices
+        var x0 = null;
+        lb.addEventListener("touchstart", function (e) { x0 = e.changedTouches[0].clientX; }, { passive: true });
+        lb.addEventListener("touchend", function (e) {
+          if (x0 === null) return;
+          var dx = e.changedTouches[0].clientX - x0;
+          if (Math.abs(dx) > 45) show(idx + (dx < 0 ? 1 : -1));
+          x0 = null;
+        }, { passive: true });
+
+        buildFilters();
+        render();
+      })();
+    </script>
+  </body>
+</html>
