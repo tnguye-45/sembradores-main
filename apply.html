@@ -298,6 +298,11 @@
       // email app (unreliable on phones) -- so please fill it in before going live.
       var FORMSPREE_ENDPOINT = "https://formspree.io/f/mljegrjj";
       var FALLBACK_EMAIL = "sembradoressemillas.missiontrip@gmail.com"; // shown to applicants if a send fails
+      // Extra people copied on every application, in addition to the recipient
+      // configured in the Formspree dashboard. NOTE: Formspree only honours _cc
+      // on its paid plans -- on the free plan this is ignored, and the reliable
+      // way to add a second reader is a forwarding rule on the mission inbox.
+      var CC_EMAILS = ["tjblaszczyk@gmail.com"];
       // =========================================================================
 
       (function () {
@@ -365,6 +370,7 @@
           var emailEl = form.querySelector("#email");
           if (emailEl && emailEl.value) data.append("_replyto", emailEl.value);
           data.append("_subject", "Mission Trip Application - " + applicantName());
+          if (CC_EMAILS.length) data.append("_cc", CC_EMAILS.join(","));
           data.append("Full Application (plain text)", collectLines().join("\n"));
 
           submitBtn.disabled = true;
