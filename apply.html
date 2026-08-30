@@ -290,19 +290,22 @@
 
     <script>
       // ====== EMAIL CONFIG ======================================================
-      // 1. Go to https://formspree.io and create a free account.
-      // 2. Create a new form; set its recipient to the mission's application inbox.
-      // 3. Copy the endpoint it gives you (looks like https://formspree.io/f/abcdwxyz)
-      //    and paste it between the quotes below. That is the only change needed.
-      // If this is left blank, the form falls back to opening the applicant's own
-      // email app (unreliable on phones) -- so please fill it in before going live.
+      // Applications are delivered by Formspree to the recipient configured on the
+      // form in the Formspree dashboard. That dashboard setting -- NOT this file --
+      // decides who actually receives the email.
+      //
+      // Intended recipient: tjblaszczyk@gmail.com
+      // To point applications somewhere else: Formspree dashboard -> this form ->
+      // Settings -> recipient email. No code change is needed.
       var FORMSPREE_ENDPOINT = "https://formspree.io/f/mljegrjj";
-      var FALLBACK_EMAIL = "sembradoressemillas.missiontrip@gmail.com"; // shown to applicants if a send fails
-      // Extra people copied on every application, in addition to the recipient
-      // configured in the Formspree dashboard. NOTE: Formspree only honours _cc
-      // on its paid plans -- on the free plan this is ignored, and the reliable
-      // way to add a second reader is a forwarding rule on the mission inbox.
-      var CC_EMAILS = ["tjblaszczyk@gmail.com"];
+
+      // Shown to an applicant if the send fails, so they have somewhere to write to.
+      var FALLBACK_EMAIL = "tjblaszczyk@gmail.com";
+
+      // Additional people copied on every application. Formspree only honours _cc on
+      // its paid plans, so leave this empty and add extra readers with a forwarding
+      // rule on the recipient inbox instead -- that works on any plan.
+      var CC_EMAILS = [];
       // =========================================================================
 
       (function () {
