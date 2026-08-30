@@ -277,6 +277,9 @@
         <section class="card">
           <p class="legal" style="border-left-color:var(--ink)"><strong>PLEASE SUBMIT THIS FORM ONLINE AND BY US MAIL.</strong><br>
           <span class="mailblock">MAIL TO: Sembradores de Semillas Mission Trips · P.O. Box 8283 · Lancaster, PA 17604</span></p>
+          <!-- Spam honeypot: hidden from humans, bots fill it in and Formspree drops the submission. -->
+          <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true"
+                 style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
           <div class="submitrow">
             <button type="submit" class="submit">Submit Application</button>
             <p id="status" class="status" role="status" aria-live="polite"></p>
@@ -287,54 +290,121 @@
 
     <script>
       // ====== EMAIL CONFIG ======================================================
-      // To have submissions emailed DIRECTLY (recommended), create a free endpoint
-      // at https://formspree.io (or getform.io) and paste the URL below.
-      // Leave it blank to use the mailto: fallback (opens the applicant's email app).
-      var FORMSPREE_ENDPOINT = ""; // e.g. "https://formspree.io/f/abcdwxyz"
-      var FALLBACK_EMAIL = "applications@sembradoressemillas.org"; // <-- set the real recipient
+      // 1. Go to https://formspree.io and create a free account.
+      // 2. Create a new form; set its recipient to the mission's application inbox.
+      // 3. Copy the endpoint it gives you (looks like https://formspree.io/f/abcdwxyz)
+      //    and paste it between the quotes below. That is the only change needed.
+      // If this is left blank, the form falls back to opening the applicant's own
+      // email app (unreliable on phones) -- so please fill it in before going live.
+      var FORMSPREE_ENDPOINT = "https://formspree.io/f/mljegrjj";
+      var FALLBACK_EMAIL = "sembradoressemillas.missiontrip@gmail.com"; // shown to applicants if a send fails
       // =========================================================================
 
-      var form = document.getElementById("application");
-      var status = document.getElementById("status");
+      (function () {
+        "use strict";
+        var form = document.getElementById("application");
+        var statusEl = document.getElementById("status");
+        var submitBtn = form.querySelector("button[type=submit]");
 
-      if (FORMSPREE_ENDPOINT) {
-        // Real email delivery via form service: native POST.
-        form.setAttribute("action", FORMSPREE_ENDPOINT);
-        form.setAttribute("method", "POST");
-        var subj = document.createElement("input");
-        subj.type = "hidden"; subj.name = "_subject";
-        subj.value = "New Mission Trip Application";
-        form.appendChild(subj);
-      } else {
-        // mailto fallback: assemble all answers into an email body.
-        form.addEventListener("submit", function (e) {
-          e.preventDefault();
-          if (!form.reportValidity()) return;
+        function setStatus(msg, kind) {
+          statusEl.textContent = msg;
+          statusEl.style.color =
+            kind === "error" ? "#A8362B" : kind === "ok" ? "#1E6B4A" : "#5A6570";
+        }
+
+        // Collect every answered field as "Question: answer" lines (used for the
+        // mailto fallback and for a readable plain-text copy in the email).
+        function collectLines() {
           var lines = [];
-          var seenRadioGroups = {};
-          var els = form.querySelectorAll("input, textarea, select");
-          els.forEach(function (el) {
-            if (!el.name) return;
-            if ((el.type === "radio" || el.type === "checkbox")) {
+          form.querySelectorAll("input, textarea, select").forEach(function (el) {
+            if (!el.name || el.type === "hidden" || el.name.charAt(0) === "_") return;
+            if (el.type === "radio" || el.type === "checkbox") {
               if (!el.checked) return;
             }
             var val = el.value && el.value.trim();
             if (!val) return;
             lines.push(el.name + ": " + val);
           });
+          return lines;
+        }
+
+        function applicantName() {
+          var first = form.querySelector("#firstName");
+          var last = form.querySelector("#lastName");
+          var name = [first && first.value, last && last.value]
+            .filter(Boolean).join(" ").trim();
+          return name || "Unnamed applicant";
+        }
+
+        function mailtoHref() {
           var body =
             "MISSION TRIP APPLICATION\nSembradores de Semillas Mission Trips\n" +
-            "Sabandia-Arequipa, Peru\n\n" + lines.join("\n");
-          var href =
-            "mailto:" + encodeURIComponent(FALLBACK_EMAIL) +
+            "Sabandia-Arequipa, Peru\n\n" + collectLines().join("\n");
+          return "mailto:" + encodeURIComponent(FALLBACK_EMAIL) +
             "?subject=" + encodeURIComponent("New Mission Trip Application") +
             "&body=" + encodeURIComponent(body);
-          window.location.href = href;
-          status.textContent =
-            "Your email app should open with your application pre-filled. Please press Send, and also mail a printed copy as noted above.";
-          status.style.color = "#A8362B";
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (!form.reportValidity()) return;
+
+          // ---- No endpoint configured: fall back to the applicant's email app ----
+          if (!FORMSPREE_ENDPOINT) {
+            window.location.href = mailtoHref();
+            setStatus(
+              "Your email app should open with your application pre-filled. " +
+              "Please press Send, and also mail a printed copy as noted above.",
+              "error"
+            );
+            return;
+          }
+
+          // ---- Real delivery: POST in the background, stay on this page ----------
+          var data = new FormData(form);
+          var emailEl = form.querySelector("#email");
+          if (emailEl && emailEl.value) data.append("_replyto", emailEl.value);
+          data.append("_subject", "Mission Trip Application - " + applicantName());
+          data.append("Full Application (plain text)", collectLines().join("\n"));
+
+          submitBtn.disabled = true;
+          var originalLabel = submitBtn.textContent;
+          submitBtn.textContent = "Sending...";
+          setStatus("Sending your application...", "info");
+
+          fetch(FORMSPREE_ENDPOINT, {
+            method: "POST",
+            body: data,
+            headers: { Accept: "application/json" }
+          })
+            .then(function (res) {
+              return res.json().catch(function () { return {}; })
+                .then(function (json) { return { ok: res.ok, json: json }; });
+            })
+            .then(function (r) {
+              if (!r.ok) throw new Error(
+                (r.json.errors && r.json.errors.map(function (x) { return x.message; }).join(", "))
+                || "The form service rejected the submission."
+              );
+              form.reset();
+              submitBtn.textContent = "Application Sent";
+              setStatus(
+                "Thank you \u2014 your application has been sent to the mission. " +
+                "Please also mail a printed copy to the address above.",
+                "ok"
+              );
+            })
+            .catch(function (err) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalLabel;
+              setStatus(
+                "We could not send your application (" + err.message + "). " +
+                "Please try again, or email it to " + FALLBACK_EMAIL + ".",
+                "error"
+              );
+            });
         });
-      }
+      })();
     </script>
   </body>
 </html>
